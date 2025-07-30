@@ -1,7 +1,7 @@
 // app/api/send/route.ts
 import { Resend } from 'resend';
 
-const resend = new Resend("re_ZqFj6NBw_MFNVvKnZzWEmcKUc5UjFJ2N5"); // Use .env file
+const resend = new Resend("re_ZqFj6NBw_MFNVvKnZzWEmcKUc5UjFJ2N5"); // Use environment variable
 
 export async function POST(req: Request) {
   const body = await req.json();
@@ -16,7 +16,10 @@ export async function POST(req: Request) {
     });
 
     return Response.json({ success: true, result });
-  } catch (error: any) {
-    return Response.json({ success: false, message: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error 
+      ? error.message 
+      : 'An unknown error occurred';
+    return Response.json({ success: false, message }, { status: 500 });
   }
 }
