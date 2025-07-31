@@ -21,7 +21,6 @@ interface Applicant {
   status: string;
   jobType: string;
   location: string;
-  applied: string;
   experience: string;
   email: string;
   phone: string;
@@ -97,7 +96,7 @@ const Applicants: React.FC = () => {
     return matchesSearch && matchesStatus;
   });
 
-  const statusOptions = ['All', 'Review', 'Rejected', 'Offer'];
+  const statusOptions = ['All', 'Review', 'NO', 'YES'];
 
   // Handle form input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -177,7 +176,7 @@ const Applicants: React.FC = () => {
       setNewApplicant({
         name: '',
         position: '',
-        status: 'Review',
+        status: 'NO',
         jobType: '',
         location: '',
         experience: '',
@@ -395,7 +394,7 @@ const Applicants: React.FC = () => {
                           ? 'bg-blue-100 text-blue-800'
                           : applicant.status === 'Interview'
                           ? 'bg-yellow-100 text-yellow-800'
-                          : applicant.status === 'Offer'
+                          : applicant.status === 'NO'
                           ? 'bg-green-100 text-green-800'
                           : 'bg-red-100 text-red-800'
                       }`}
@@ -419,8 +418,8 @@ const Applicants: React.FC = () => {
                         {updatingId === applicant._id ? 'Updating...' : 'Review'}
                       </button>
                       <button
-                        onClick={() => handleStatusUpdate(applicant._id, 'Rejected')}
-                        disabled={updatingId === applicant._id || applicant.status === 'Rejected'}
+                        onClick={() => handleStatusUpdate(applicant._id, 'NO')}
+                        disabled={updatingId === applicant._id || applicant.status === 'NO'}
                         className={`relative px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 transform hover:scale-105 border border-red-200 shadow-sm ${
                           applicant.status === 'Rejected' || updatingId === applicant._id
                             ? 'bg-red-200 text-white cursor-not-allowed'
@@ -429,7 +428,7 @@ const Applicants: React.FC = () => {
                         title="Reject Applicant"
                         aria-label="Reject applicant"
                       >
-                        {updatingId === applicant._id ? 'Updating...' : 'Reject'}
+                        {updatingId === applicant._id ? 'Updating...' : 'NO'}
                       </button>
                       <button
                         onClick={() => handleStatusUpdate(applicant._id, 'Offer')}
@@ -442,7 +441,7 @@ const Applicants: React.FC = () => {
                         title="Make Offer"
                         aria-label="Offer position to applicant"
                       >
-                        {updatingId === applicant._id ? 'Updating...' : 'Offer'}
+                        {updatingId === applicant._id ? 'Updating...' : 'YES'}
                       </button>
                     </div>
                   </td>
