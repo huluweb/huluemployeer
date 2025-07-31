@@ -145,59 +145,61 @@ const filteredApplicants = applicants.filter(applicant => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-    setIsSubmitting(true);
-    try {
-      if (editingApplicant) {
-        const updateData = {
-          ...newApplicant,
-          _id: editingApplicant._id
-        };
-        
-        const response = await axiosInstance.put(
-          `/applicants/${editingApplicant._id}`,
-          updateData
-        );
-        
-        setApplicants(applicants.map(applicant =>
-          applicant._id === editingApplicant._id ? response.data.applicant : applicant
-        ));
-        toast.success('Applicant updated successfully!', { position: 'top-right', autoClose: 3000 });
-      } else {
-        const response = await axiosInstance.post('/applicants', newApplicant);
-        setApplicants([...applicants, response.data.applicant]);
-        toast.success('Applicant added successfully!', { position: 'top-right', autoClose: 3000 });
-        await fetch('/api/send', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            to: "zgju9781@gmail.com",
-            subject: "Add Employee",
-            text: "We noticed a seeing to your Employee.\nTime: Tuesday, July 29, 2025 – 10:42 AM\nLocation: Addis Ababa, Ethiopia (approximate)",
-          }),
-        });
+ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  if (!validateForm()) return;
+  setIsSubmitting(true);
+  try {
+    if (editingApplicant) {
+      if (!editingApplicant._id) {
+        toast.error('Invalid applicant ID', { position: 'top-right', autoClose: 3000 });
+        setIsSubmitting(false);
+        return;
       }
-      setShowForm(false);
-      setEditingApplicant(null);
-    } catch (error) {
-      let message = 'Failed to add/update applicant';
-      if (isAxiosError(error)) {
-        message = error.response?.data?.message || message;
-        if (error.response?.status === 401) {
-          localStorage.removeItem('token');
-          router.push('/login');
-        }
-      } else if (error instanceof Error) {
-        message = error.message;
-      }
-      toast.error(message, { position: 'top-right', autoClose: 3000 });
-    } finally {
-      setIsSubmitting(false);
+      const updateData = {
+        ...newApplicant,
+        _id: editingApplicant._id
+      };
+      const response = await axiosInstance.put(
+        /applicants/${editingApplicant._id},
+        updateData
+      );
+      setApplicants(applicants.map(applicant =>
+        applicant._id === editingApplicant._id ? response.data.applicant : applicant
+      ));
+      toast.success('Applicant updated successfully!', { position: 'top-right', autoClose: 3000 });
+    } else {
+      const response = await axiosInstance.post('/applicants', newApplicant);
+      setApplicants([...applicants, response.data.applicant]);
+      toast.success('Applicant added successfully!', { position: 'top-right', autoClose: 3000 });
+      await fetch('/api/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: "zgju9781@gmail.com",
+          subject: "Add Employee",
+          text: "We noticed a seeing to your Employee.\nTime: Tuesday, July 29, 2025 – 10:42 AM\nLocation: Addis Ababa, Ethiopia (approximate)",
+        }),
+      });
     }
-  };
-
+    setShowForm(false);
+    setEditingApplicant(null);
+  } catch (error) {
+    let message = 'Failed to add/update applicant';
+    if (isAxiosError(error)) {
+      message = error.response?.data?.message || message;
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        router.push('/login');
+      }
+    } else if (error instanceof Error) {
+      message = error.message;
+    }
+    toast.error(message, { position: 'top-right', autoClose: 3000 });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
   useEffect(() => {
     const fetchDataAndSendEmail = async () => {
       try {
