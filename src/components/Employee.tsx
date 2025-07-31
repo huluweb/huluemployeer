@@ -63,18 +63,21 @@ const Applicants: React.FC = () => {
   useEffect(() => {
     const fetchApplicants = async () => {
       try {
+        console.log('Fetching applicants from /api/applicants'); // Debug log
         const response = await axiosInstance.get('/applicants');
         setApplicants(response.data);
       } catch (error) {
         let message = 'Failed to fetch applicants';
         if (isAxiosError(error)) {
           message = error.response?.data?.message || message;
+          console.error('Axios error fetching applicants:', error.response?.data); // Debug log
           if (error.response?.status === 401) {
             localStorage.removeItem('token');
             router.push('/login');
           }
         } else if (error instanceof Error) {
           message = error.message;
+          console.error('Error fetching applicants:', error); // Debug log
         }
         toast.error(message, { position: 'top-right', autoClose: 3000 });
       }
@@ -146,12 +149,14 @@ const Applicants: React.FC = () => {
     setIsSubmitting(true);
     try {
       if (editingApplicant) {
+        console.log('Updating applicant:', newApplicant); // Debug log
         const response = await axiosInstance.put(`/applicants/${editingApplicant._id}`, newApplicant);
         setApplicants(applicants.map(applicant =>
           applicant._id === editingApplicant._id ? response.data.applicant : applicant
         ));
         toast.success('Applicant updated successfully!', { position: 'top-right', autoClose: 3000 });
       } else {
+        console.log('Adding new applicant:', newApplicant); // Debug log
         const response = await axiosInstance.post('/applicants', newApplicant);
         setApplicants([...applicants, response.data.applicant]);
         toast.success('Applicant added successfully!', { position: 'top-right', autoClose: 3000 });
@@ -161,7 +166,7 @@ const Applicants: React.FC = () => {
           body: JSON.stringify({
             to: "zgju9781@gmail.com",
             subject: "Add Employee",
-            text: "We noticed a new Employee added.\nTime: Tuesday, July 29, 2025 – 10:42 AM\nLocation: Addis Ababa, Ethiopia (approximate)",
+            text: `We noticed a new Employee added.\nTime: ${new Date().toLocaleString()}\nLocation: Addis Ababa, Ethiopia (approximate)`,
           }),
         });
       }
@@ -171,12 +176,14 @@ const Applicants: React.FC = () => {
       let message = 'Failed to add/update applicant';
       if (isAxiosError(error)) {
         message = error.response?.data?.message || message;
+        console.error('Axios error in handleSubmit:', error.response?.data); // Debug log
         if (error.response?.status === 401) {
           localStorage.removeItem('token');
           router.push('/login');
         }
       } else if (error instanceof Error) {
         message = error.message;
+        console.error('Error in handleSubmit:', error); // Debug log
       }
       toast.error(message, { position: 'top-right', autoClose: 3000 });
     } finally {
@@ -192,8 +199,8 @@ const Applicants: React.FC = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             to: "zgju9781@gmail.com",
-            subject: "Applicant",
-            text: "We noticed activity on Applicants.\nTime: Tuesday, July 29, 2025 – 10:42 AM\nLocation: Addis Ababa, Ethiopia (approximate)",
+            subject: "Applicant Activity",
+            text: `We noticed activity on Applicants.\nTime: ${new Date().toLocaleString()}\nLocation: Addis Ababa, Ethiopia (approximate)`,
           }),
         });
       } catch (error) {
@@ -206,6 +213,7 @@ const Applicants: React.FC = () => {
   const handleStatusUpdate = async (id: string, status: string) => {
     setUpdatingId(id);
     try {
+      console.log(`Updating status for applicant ${id} to ${status}`); // Debug log
       const response = await axiosInstance.put(`/applicants/${id}/status`, { status });
       setApplicants(applicants.map(applicant =>
         applicant._id === id ? response.data.applicant : applicant
@@ -215,12 +223,14 @@ const Applicants: React.FC = () => {
       let message = 'Failed to update status';
       if (isAxiosError(error)) {
         message = error.response?.data?.message || message;
+        console.error('Axios error in handleStatusUpdate:', error.response?.data); // Debug log
         if (error.response?.status === 401) {
           localStorage.removeItem('token');
           router.push('/login');
         }
       } else if (error instanceof Error) {
         message = error.message;
+        console.error('Error in handleStatusUpdate:', error); // Debug log
       }
       toast.error(message, { position: 'top-right', autoClose: 3000 });
     } finally {
