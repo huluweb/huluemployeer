@@ -265,7 +265,7 @@ const TodoApp: React.FC = () => {
       >
         <div className="p-4 border-b border-gray-700">
           <h2 className="text-xl font-bold">Team Tasks</h2>
-          <p className="text-gray-400 text-sm">Manage your team's tasks</p>
+          <p className="text-gray-400 text-sm">Manage your teams tasks</p>
         </div>
 
         <div className="p-3 hidden md:block">
@@ -323,7 +323,7 @@ const TodoApp: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-xl font-bold text-gray-800">
-                {currentUser?.name}'s Tasks
+                {currentUser?.name}s Tasks
               </h1>
               <p className="text-sm text-gray-600">
                 {isAdmin 
