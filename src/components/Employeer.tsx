@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { HiPlus, HiOutlineSearch, HiDotsVertical } from 'react-icons/hi';
+import { HiPlus, HiOutlineSearch } from 'react-icons/hi';
 import EmployeeForm from "./EmlployeeForm";
 
 // Define the Employee interface
@@ -13,43 +13,38 @@ interface Employee {
 }
 
 const Employeer: React.FC = () => {
-  // Add type to employees state
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [see, setSee] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
 
-  // Fetch employees on component mount
-useEffect(() => {
-  const fetchDataAndSendEmail = async () => {
-    try {
-      // Optional: Only use if fetchEmployees is defined
-      await fetchEmployees();
+  useEffect(() => {
+    const fetchDataAndSendEmail = async () => {
+      try {
+        await fetchEmployees();
 
-      const to = "zgju9781@gmail.com";
-      const subject = "Employeer";
-      const text =
-        "We noticed a seeing to your Employer.\n" +
-        "Time: Tuesday, July 29, 2025 – 10:42 AM\n" +
-        "Location: Addis Ababa, Ethiopia (approximate)";
+        const to = "zgju9781@gmail.com";
+        const subject = "Employeer";
+        const text =
+          "We noticed a seeing to your Employer.\n" +
+          "Time: Tuesday, July 29, 2025 – 10:42 AM\n" +
+          "Location: Addis Ababa, Ethiopia (approximate)";
 
-      const res = await fetch('/api/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to, subject, text }),
-      });
+        const res = await fetch('/api/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ to, subject, text }),
+        });
 
-      const result = await res.json();
-      console.log('Email sent result:', result);
-    } catch (error) {
-      console.error('Error sending email:', error);
-    }
-  };
+        const result = await res.json();
+        console.log('Email sent result:', result);
+      } catch (error) {
+        console.error('Error sending email:', error);
+      }
+    };
 
-  fetchDataAndSendEmail();
-}, []);
-
-  
-
+    fetchDataAndSendEmail();
+  }, []);
 
   const fetchEmployees = async () => {
     try {
@@ -65,7 +60,11 @@ useEffect(() => {
     }
   };
 
-  // Add safe navigation with optional chaining
+  const handleEdit = (employee: Employee) => {
+    setSelectedEmployee(employee);
+    setSee(true);
+  };
+
   const filteredEmployees = employees.filter(employee => 
     (employee.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
     (employee.position || '').toLowerCase().includes(searchTerm.toLowerCase())
@@ -90,7 +89,13 @@ useEffect(() => {
             />
           </div>
           
-          <button className="bg-blue-600 text-white rounded-md px-4 py-2 flex items-center hover:bg-blue-700 transition-colors" onClick={() => setSee(true)}>
+          <button 
+            className="bg-blue-600 text-white rounded-md px-4 py-2 flex items-center hover:bg-blue-700 transition-colors" 
+            onClick={() => {
+              setSelectedEmployee(null);
+              setSee(true);
+            }}
+          >
             <HiPlus className="w-5 h-5 mr-1" />
             <span>Add Employee</span>
           </button>
@@ -146,8 +151,11 @@ useEffect(() => {
                     <div className="text-sm text-gray-900">{employee.address || 'N/A'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button className="text-gray-500 hover:text-gray-700">
-                      <HiDotsVertical className="w-5 h-5" />
+                    <button 
+                      className="text-blue-600 hover:text-blue-800"
+                      onClick={() => handleEdit(employee)}
+                    >
+                      Edit
                     </button>
                   </td>
                 </tr>
@@ -161,6 +169,7 @@ useEffect(() => {
           <EmployeeForm 
             setSee={() => setSee(false)} 
             onEmployeeAdded={fetchEmployees}
+            employee={selectedEmployee}
           />
         </div>
       )}
