@@ -1,10 +1,10 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { HiPlus,HiMenu, HiTrash, HiCheckCircle, HiUser, HiOutlineSearch } from 'react-icons/hi';
+import { HiPlus, HiMenu, HiTrash, HiCheckCircle, HiUser, HiOutlineSearch } from 'react-icons/hi';
 import axiosInstance from '@/helper/axiosInstance';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { AxiosError } from 'axios'; // Added AxiosError import
+import { AxiosError } from 'axios';
 
 interface Task {
   _id: string;
@@ -29,38 +29,44 @@ const TodoApp: React.FC = () => {
     { id: 'eldana', name: 'Eldana', role: 'employee' },
     { id: 'eyerus', name: 'Eyerus', role: 'employee' },
     { id: 'kaleab', name: 'Kaleab', role: 'employee' },
-    { id: 'Host', name: 'Host', role: 'employee' },
+    { id: 'meskerem', name: 'Meskerem', role: 'employee' },
   ];
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [activeUser, setActiveUser] = useState<string>('abush');
   const [newTaskText, setNewTaskText] = useState('');
-  const [assignedTo, setAssignedTo] = useState<string>('blen');
+  const [assignedTo, setAssignedTo] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
 
   const currentUser = users.find(user => user.id === activeUser);
   const isAdmin = currentUser?.role === 'admin';
-  const filteredTasks = tasks.filter(task => {
-    const matchesUser = isAdmin || task.assignedTo === activeUser;
-    const matchesSearch = task.text.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesUser && matchesSearch;
-  });
-  // Fetch tasks on mount and when activeUser changes
+
+  const getAssignableUsers = () => {
+    if (isAdmin) {
+      return users;
+    } else if (['eyerus', 'eldana', 'biruk', 'blen'].includes(activeUser)) {
+      return users.filter(user => user.id === 'abush');
+    } else if (activeUser === 'kaleab') {
+      return users.filter(user => user.id === 'abush' || user.id === 'meskerem');
+    } else if (activeUser === 'meskerem') {
+      return users.filter(user => user.id === 'abush' || user.id === 'kaleab');
+    }
+    return [];
+  };
+
   useEffect(() => {
-    fetchTasks();
+    const assignable = getAssignableUsers();
+    if (assignable.length > 0) {
+      setAssignedTo(assignable[0].id);
+    } else {
+      setAssignedTo('');
+    }
   }, [activeUser]);
 
-  // Reset assignee when user changes
   useEffect(() => {
-    if (activeUser === 'kaleab') {
-      setAssignedTo('Host');
-    } else if (activeUser === 'Host') {
-      setAssignedTo('kaleab');
-    } else {
-      setAssignedTo('eldana');
-    }
+    fetchTasks();
   }, [activeUser]);
 
   const fetchTasks = async () => {
@@ -75,7 +81,6 @@ const TodoApp: React.FC = () => {
       } else if (error instanceof Error) {
         errorMessage = error.message;
       }
-      
       toast.error(errorMessage, {
         position: "top-right",
         autoClose: 3000,
@@ -130,7 +135,6 @@ const TodoApp: React.FC = () => {
       } else if (error instanceof Error) {
         errorMessage = error.message;
       }
-      
       toast.error(errorMessage, {
         position: "top-right",
         autoClose: 3000,
@@ -164,7 +168,6 @@ const TodoApp: React.FC = () => {
       } else if (error instanceof Error) {
         errorMessage = error.message;
       }
-      
       toast.error(errorMessage, {
         position: "top-right",
         autoClose: 3000,
@@ -202,7 +205,6 @@ const TodoApp: React.FC = () => {
       } else if (error instanceof Error) {
         errorMessage = error.message;
       }
-      
       toast.error(errorMessage, {
         position: "top-right",
         autoClose: 3000,
@@ -216,9 +218,11 @@ const TodoApp: React.FC = () => {
     }
   };
 
-
-  // Allow all users (admin or employee) to assign tasks
-  const canAssignTasks = true;
+  const filteredTasks = tasks.filter(task => {
+    const matchesUser = isAdmin || task.assignedTo === activeUser;
+    const matchesSearch = task.text.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesUser && matchesSearch;
+  });
 
   return (
     <div className="bg-white min-h-screen flex flex-col md:flex-row">
@@ -233,7 +237,7 @@ const TodoApp: React.FC = () => {
           <HiMenu className="w-6 h-6" />
         </button>
         <h1 className="text-xl font-bold">Team Tasks</h1>
-        <div className="w-10"></div> {/* Spacer for alignment */}
+        <div className="w-10"></div>
       </div>
       
       {/* Mobile Search */}
@@ -261,7 +265,7 @@ const TodoApp: React.FC = () => {
       >
         <div className="p-4 border-b border-gray-700">
           <h2 className="text-xl font-bold">Team Tasks</h2>
-          <p className="text-gray-400 text-sm">Manage your teams tasks</p>
+          <p className="text-gray-400 text-sm">Manage your team's tasks</p>
         </div>
 
         <div className="p-3 hidden md:block">
@@ -307,7 +311,6 @@ const TodoApp: React.FC = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-h-0">
-        {/* Overlay for mobile sidebar */}
         {showSidebar && (
           <div 
             className="fixed inset-0 bg-black bg-opacity-50 z-0 md:hidden"
@@ -320,7 +323,7 @@ const TodoApp: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-xl font-bold text-gray-800">
-                {currentUser?.name}s Tasks
+                {currentUser?.name}'s Tasks
               </h1>
               <p className="text-sm text-gray-600">
                 {isAdmin 
@@ -333,7 +336,7 @@ const TodoApp: React.FC = () => {
         </div>
 
         {/* Task creation form */}
-        {canAssignTasks && (
+        {getAssignableUsers().length > 0 && (
           <div className="bg-blue-50 border-b border-blue-100 p-4">
             <div className="max-w-4xl mx-auto">
               <h2 className="text-lg font-medium text-blue-800 mb-3">Assign New Task</h2>
@@ -355,19 +358,11 @@ const TodoApp: React.FC = () => {
                     className="flex-1 border border-gray-300 text-[#333] rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base"
                     disabled={isLoading}
                   >
-                    {isAdmin ? (
-                      users.map(user => (
-                        <option key={user.id} value={user.id}>
-                          {user.name}
-                        </option>
-                      ))
-                    ) : (
-                      <>
-                        <option value="abush">Abush (Admin)</option>
-                        {activeUser === 'kaleab' && <option value="Host">Host</option>}
-                        {activeUser === 'Host' && <option value="kaleab">Kaleab</option>}
-                      </>
-                    )}
+                    {getAssignableUsers().map(user => (
+                      <option key={user.id} value={user.id}>
+                        {user.name}
+                      </option>
+                    ))}
                   </select>
                   
                   <button
@@ -409,8 +404,8 @@ const TodoApp: React.FC = () => {
                 </div>
                 <h3 className="mt-4 text-lg font-medium text-gray-900">No tasks found</h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  {canAssignTasks 
-                    ? 'Assign tasks using the form above' 
+                  {getAssignableUsers().length > 0
+                    ? 'Assign tasks using the form above'
                     : 'No tasks assigned to you yet'}
                 </p>
               </div>
@@ -439,7 +434,7 @@ const TodoApp: React.FC = () => {
 
                       <div className="flex-1 min-w-0">
                         <p 
-                          className={`${task.completed ? 'text-gray-500' : 'text-gray-800'} text-sm md:text-base truncate`}
+                          className={`${task.completed ? 'text-gray-500 line-through' : 'text-gray-800'} text-sm md:text-base truncate`}
                         >
                           {task.text}
                         </p>
@@ -449,7 +444,7 @@ const TodoApp: React.FC = () => {
                             <span className="text-gray-400 mr-1">Assigned to:</span>
                             <div className="flex items-center">
                               <div className="bg-gray-200 border-2 border-dashed rounded-full w-4 h-4 mr-1" />
-                              <span className="font-medium">{assignedUser?.name}</span>
+                              <span className="font-medium">{assignedUser?.name || 'Unknown'}</span>
                             </div>
                           </div>
                           
@@ -457,7 +452,7 @@ const TodoApp: React.FC = () => {
                             <span className="text-gray-400 mr-1">Assigned by:</span>
                             <div className="flex items-center">
                               <div className="bg-gray-200 border-2 border-dashed rounded-full w-4 h-4 mr-1" />
-                              <span className="font-medium">{assignedByUser?.name}</span>
+                              <span className="font-medium">{assignedByUser?.name || 'Unknown'}</span>
                             </div>
                           </div>
                           
