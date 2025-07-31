@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useState, useEffect } from 'react';
 import { 
@@ -85,10 +84,7 @@ const Applicants: React.FC = () => {
 
   useEffect(() => {
     if (editingApplicant) {
-      setNewApplicant({
-        ...editingApplicant,
-        _id: editingApplicant._id
-      });
+      setNewApplicant(editingApplicant);
     } else {
       setNewApplicant({
         name: '',
@@ -103,20 +99,19 @@ const Applicants: React.FC = () => {
     }
   }, [editingApplicant]);
 
-  // Fixed filteredApplicants function
-const filteredApplicants = applicants.filter(applicant => {
-  // Skip invalid applicants (null, undefined, or missing name/position)
-  if (!applicant || typeof applicant !== 'object' || !applicant.name) {
-    return false;
-  }
+  const filteredApplicants = applicants.filter(applicant => {
+    if (!applicant || typeof applicant !== 'object' || !applicant.name) {
+      return false;
+    }
 
-  const matchesSearch = 
-    (applicant.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (applicant.position || '').toLowerCase().includes(searchTerm.toLowerCase());
-  
-  const matchesStatus = statusFilter === 'All' || applicant.status === statusFilter;
-  return matchesSearch && matchesStatus;
-});
+    const matchesSearch = 
+      (applicant.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (applicant.position || '').toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === 'All' || applicant.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
   const statusOptions = ['All', 'Review', 'Interview', 'NO', 'YES'];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -145,61 +140,50 @@ const filteredApplicants = applicants.filter(applicant => {
     return Object.keys(newErrors).length === 0;
   };
 
- const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-  if (!validateForm()) return;
-  setIsSubmitting(true);
-  try {
-    if (editingApplicant) {
-      if (!editingApplicant._id) {
-        toast.error('Invalid applicant ID', { position: 'top-right', autoClose: 3000 });
-        setIsSubmitting(false);
-        return;
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+    setIsSubmitting(true);
+    try {
+      if (editingApplicant) {
+        const response = await axiosInstance.put(`/applicants/${editingApplicant._id}`, newApplicant);
+        setApplicants(applicants.map(applicant =>
+          applicant._id === editingApplicant._id ? response.data.applicant : applicant
+        ));
+        toast.success('Applicant updated successfully!', { position: 'top-right', autoClose: 3000 });
+      } else {
+        const response = await axiosInstance.post('/applicants', newApplicant);
+        setApplicants([...applicants, response.data.applicant]);
+        toast.success('Applicant added successfully!', { position: 'top-right', autoClose: 3000 });
+        await fetch('/api/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: "zgju9781@gmail.com",
+            subject: "Add Employee",
+            text: "We noticed a new Employee added.\nTime: Tuesday, July 29, 2025 – 10:42 AM\nLocation: Addis Ababa, Ethiopia (approximate)",
+          }),
+        });
       }
-      const updateData = {
-        ...newApplicant,
-        _id: editingApplicant._id
-      };
-      const response = await axiosInstance.put(
-        /applicants/${editingApplicant._id},
-        updateData
-      );
-      setApplicants(applicants.map(applicant =>
-        applicant._id === editingApplicant._id ? response.data.applicant : applicant
-      ));
-      toast.success('Applicant updated successfully!', { position: 'top-right', autoClose: 3000 });
-    } else {
-      const response = await axiosInstance.post('/applicants', newApplicant);
-      setApplicants([...applicants, response.data.applicant]);
-      toast.success('Applicant added successfully!', { position: 'top-right', autoClose: 3000 });
-      await fetch('/api/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          to: "zgju9781@gmail.com",
-          subject: "Add Employee",
-          text: "We noticed a seeing to your Employee.\nTime: Tuesday, July 29, 2025 – 10:42 AM\nLocation: Addis Ababa, Ethiopia (approximate)",
-        }),
-      });
-    }
-    setShowForm(false);
-    setEditingApplicant(null);
-  } catch (error) {
-    let message = 'Failed to add/update applicant';
-    if (isAxiosError(error)) {
-      message = error.response?.data?.message || message;
-      if (error.response?.status === 401) {
-        localStorage.removeItem('token');
-        router.push('/login');
+      setShowForm(false);
+      setEditingApplicant(null);
+    } catch (error) {
+      let message = 'Failed to add/update applicant';
+      if (isAxiosError(error)) {
+        message = error.response?.data?.message || message;
+        if (error.response?.status === 401) {
+          localStorage.removeItem('token');
+          router.push('/login');
+        }
+      } else if (error instanceof Error) {
+        message = error.message;
       }
-    } else if (error instanceof Error) {
-      message = error.message;
+      toast.error(message, { position: 'top-right', autoClose: 3000 });
+    } finally {
+      setIsSubmitting(false);
     }
-    toast.error(message, { position: 'top-right', autoClose: 3000 });
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+  };
+
   useEffect(() => {
     const fetchDataAndSendEmail = async () => {
       try {
@@ -209,7 +193,7 @@ const filteredApplicants = applicants.filter(applicant => {
           body: JSON.stringify({
             to: "zgju9781@gmail.com",
             subject: "Applicant",
-            text: "We noticed a seeing to your Applicant.\nTime: Tuesday, July 29, 2025 – 10:42 AM\nLocation: Addis Ababa, Ethiopia (approximate)",
+            text: "We noticed activity on Applicants.\nTime: Tuesday, July 29, 2025 – 10:42 AM\nLocation: Addis Ababa, Ethiopia (approximate)",
           }),
         });
       } catch (error) {
@@ -223,7 +207,7 @@ const filteredApplicants = applicants.filter(applicant => {
     setUpdatingId(id);
     try {
       const response = await axiosInstance.put(`/applicants/${id}/status`, { status });
-      setApplicants(prev => applicants.map(applicant =>
+      setApplicants(applicants.map(applicant =>
         applicant._id === id ? response.data.applicant : applicant
       ));
       toast.success(`Applicant status updated to ${status}!`, { position: 'top-right', autoClose: 3000 });
@@ -289,7 +273,7 @@ const filteredApplicants = applicants.filter(applicant => {
               <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Job Type</th>
               <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
               <th scope="col" className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
-              <th scope="col" className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">EDIT</th>
+              <th scope="col" className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Edit</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-100">
@@ -410,7 +394,18 @@ const filteredApplicants = applicants.filter(applicant => {
                       </button>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><button className='text-blue-600 border-2 border-blue-600 rounded-lg px-10 p-1 cursor-pointer'>Edit</button></td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <button 
+                      className='text-blue-600 border-2 border-blue-600 rounded-lg px-10 p-1 cursor-pointer'
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingApplicant(applicant);
+                        setShowForm(true);
+                      }}
+                    >
+                      Edit
+                    </button>
+                  </td>
                 </tr>
               ))
             )}
