@@ -3,10 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { 
   HiOutlineSearch, 
   HiChevronDown, 
-  HiOutlineMail, 
   HiOutlinePhone, 
   HiX
 } from 'react-icons/hi';
+import { FaGenderless } from 'react-icons/fa';
 import axiosInstance from '@/helper/axiosInstance';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -21,7 +21,7 @@ interface Applicant {
   jobType: string;
   location: string;
   experience: string;
-  email: string;
+  gender: string;
   phone: string;
 }
 
@@ -31,7 +31,7 @@ interface FormErrors {
   jobType?: string;
   location?: string;
   experience?: string;
-  email?: string;
+  gender?: string;
   phone?: string;
 }
 
@@ -52,7 +52,7 @@ const Applicants: React.FC = () => {
     jobType: '',
     location: '',
     experience: '',
-    email: '',
+    gender: '',
     phone: '',
   });
   const [errors, setErrors] = useState<FormErrors>({});
@@ -96,7 +96,7 @@ const Applicants: React.FC = () => {
         jobType: '',
         location: '',
         experience: '',
-        email: '',
+        gender: '',
         phone: '',
       });
     }
@@ -132,9 +132,7 @@ const Applicants: React.FC = () => {
     if (!newApplicant.jobType.trim()) newErrors.jobType = 'Job type is required';
     if (!newApplicant.location.trim()) newErrors.location = 'Location is required';
     if (!newApplicant.experience.trim()) newErrors.experience = 'Experience is required';
-    if (newApplicant.email.trim() && !/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(newApplicant.email)) {
-      newErrors.email = 'Please enter a valid email';
-    }
+    if (newApplicant.gender.trim()) newErrors.gender = 'Gender is required' 
     if (!newApplicant.phone.trim()) newErrors.phone = 'Phone is required';
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) {
@@ -314,8 +312,8 @@ const Applicants: React.FC = () => {
                   <td className="px-6 py-4">
                     <div className="flex flex-col space-y-1">
                       <div className="flex items-center text-sm text-gray-600">
-                        <HiOutlineMail className="w-4 h-4 mr-2 text-gray-400" />
-                        <span>{applicant.email || 'Not provided'}</span>
+                        <FaGenderless className="w-4 h-4 mr-2 text-gray-400" />
+                        <span>{applicant.gender || 'Not provided'}</span>
                       </div>
                       <div className="flex items-center text-sm text-gray-600">
                         <HiOutlinePhone className="w-4 h-4 mr-2 text-gray-400" />
@@ -543,17 +541,21 @@ const Applicants: React.FC = () => {
                   />
                   {errors.position && <p className="mt-1 text-sm text-red-600">{errors.position}</p>}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email (Optional)</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={newApplicant.email}
-                    onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-md text-gray-800 ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
-                  />
-                  {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                <select
+                name="gender"
+                value={newApplicant.gender}
+                onChange={handleInputChange}
+                className={`w-full px-3 py-2 border rounded-md text-gray-800 ${errors.gender ? 'border-red-500' : 'border-gray-300'}`}
+                >
+                <option value="">Select gender</option>
+                <option value="M">Male</option>
+                <option value="F">Female</option>
+                </select>
+                {errors.gender && <p className="mt-1 text-sm text-red-600">{errors.gender}</p>}
                 </div>
+
               </div>
               <div className="flex justify-end space-x-3">
                 <button
