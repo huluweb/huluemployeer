@@ -66,6 +66,7 @@ const Applicants: React.FC = () => {
         console.log('Fetching applicants from /api/applicants');
         const response = await axiosInstance.get('/applicants');
         setApplicants(response.data);
+        console.log(response.data)
       } catch (error) {
         let message = 'Failed to fetch applicants';
         if (isAxiosError(error)) {
