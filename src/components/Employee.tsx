@@ -117,13 +117,13 @@ const Applicants: React.FC = () => {
 
   const statusOptions = ['All', 'Review', 'Interview', 'NO', 'YES'];
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setNewApplicant(prev => ({ ...prev, [name]: value }));
     if (errors[name as keyof FormErrors]) {
       setErrors(prev => ({ ...prev, [name]: undefined }));
     }
-  };
+};
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -541,22 +541,20 @@ const Applicants: React.FC = () => {
                   />
                   {errors.position && <p className="mt-1 text-sm text-red-600">{errors.position}</p>}
                 </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
-                <select
-                name="gender"
-                value={newApplicant.gender}
-                onChange={handleInputChange}
-                className={`w-full px-3 py-2 border rounded-md text-gray-800 ${errors.gender ? 'border-red-500' : 'border-gray-300'}`}
-                >
-                <option value="">Select gender</option>
-                <option value="M">Male</option>
-                <option value="F">Female</option>
-                </select>
-                {errors.gender && <p className="mt-1 text-sm text-red-600">{errors.gender}</p>}
-                </div>
-
-              </div>
+             <div>
+    <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+    <select
+        name="gender"
+        value={newApplicant.gender}
+        onChange={handleInputChange}
+        className={w-full px-3 py-2 border rounded-md text-gray-800 ${errors.gender ? 'border-red-500' : 'border-gray-300'}}
+    >
+        <option value="">Select gender</option>
+        <option value="M">Male</option>
+        <option value="F">Female</option>
+    </select>
+    {errors.gender && <p className="mt-1 text-sm text-red-600">{errors.gender}</p>}
+</div>
               <div className="flex justify-end space-x-3">
                 <button
                   type="button"
