@@ -63,21 +63,21 @@ const Applicants: React.FC = () => {
   useEffect(() => {
     const fetchApplicants = async () => {
       try {
-        console.log('Fetching applicants from /api/applicants'); // Debug log
+        console.log('Fetching applicants from /api/applicants');
         const response = await axiosInstance.get('/applicants');
         setApplicants(response.data);
       } catch (error) {
         let message = 'Failed to fetch applicants';
         if (isAxiosError(error)) {
           message = error.response?.data?.message || message;
-          console.error('Axios error fetching applicants:', error.response?.data); // Debug log
+          console.error('Axios error fetching applicants:', error.response?.data);
           if (error.response?.status === 401) {
             localStorage.removeItem('token');
             router.push('/login');
           }
         } else if (error instanceof Error) {
           message = error.message;
-          console.error('Error fetching applicants:', error); // Debug log
+          console.error('Error fetching applicants:', error);
         }
         toast.error(message, { position: 'top-right', autoClose: 3000 });
       }
@@ -117,13 +117,13 @@ const Applicants: React.FC = () => {
 
   const statusOptions = ['All', 'Review', 'Interview', 'NO', 'YES'];
 
-const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setNewApplicant(prev => ({ ...prev, [name]: value }));
     if (errors[name as keyof FormErrors]) {
       setErrors(prev => ({ ...prev, [name]: undefined }));
     }
-};
+  };
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -132,7 +132,7 @@ const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectEle
     if (!newApplicant.jobType.trim()) newErrors.jobType = 'Job type is required';
     if (!newApplicant.location.trim()) newErrors.location = 'Location is required';
     if (!newApplicant.experience.trim()) newErrors.experience = 'Experience is required';
-    if (newApplicant.gender.trim()) newErrors.gender = 'Gender is required' 
+    if (!newApplicant.gender.trim()) newErrors.gender = 'Gender is required';
     if (!newApplicant.phone.trim()) newErrors.phone = 'Phone is required';
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) {
@@ -147,14 +147,14 @@ const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectEle
     setIsSubmitting(true);
     try {
       if (editingApplicant) {
-        console.log('Updating applicant:', newApplicant); // Debug log
+        console.log('Updating applicant:', newApplicant);
         const response = await axiosInstance.put(`/applicants/${editingApplicant._id}`, newApplicant);
         setApplicants(applicants.map(applicant =>
           applicant._id === editingApplicant._id ? response.data.applicant : applicant
         ));
         toast.success('Applicant updated successfully!', { position: 'top-right', autoClose: 3000 });
       } else {
-        console.log('Adding new applicant:', newApplicant); // Debug log
+        console.log('Adding new applicant:', newApplicant);
         const response = await axiosInstance.post('/applicants', newApplicant);
         setApplicants([...applicants, response.data.applicant]);
         toast.success('Applicant added successfully!', { position: 'top-right', autoClose: 3000 });
@@ -174,14 +174,14 @@ const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectEle
       let message = 'Failed to add/update applicant';
       if (isAxiosError(error)) {
         message = error.response?.data?.message || message;
-        console.error('Axios error in handleSubmit:', error.response?.data); // Debug log
+        console.error('Axios error in handleSubmit:', error.response?.data);
         if (error.response?.status === 401) {
           localStorage.removeItem('token');
           router.push('/login');
         }
       } else if (error instanceof Error) {
         message = error.message;
-        console.error('Error in handleSubmit:', error); // Debug log
+        console.error('Error in handleSubmit:', error);
       }
       toast.error(message, { position: 'top-right', autoClose: 3000 });
     } finally {
@@ -211,7 +211,7 @@ const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectEle
   const handleStatusUpdate = async (id: string, status: string) => {
     setUpdatingId(id);
     try {
-      console.log(`Updating status for applicant ${id} to ${status}`); // Debug log
+      console.log(`Updating status for applicant ${id} to ${status}`);
       const response = await axiosInstance.put(`/applicants/${id}/status`, { status });
       setApplicants(applicants.map(applicant =>
         applicant._id === id ? response.data.applicant : applicant
@@ -221,14 +221,14 @@ const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectEle
       let message = 'Failed to update status';
       if (isAxiosError(error)) {
         message = error.response?.data?.message || message;
-        console.error('Axios error in handleStatusUpdate:', error.response?.data); // Debug log
+        console.error('Axios error in handleStatusUpdate:', error.response?.data);
         if (error.response?.status === 401) {
           localStorage.removeItem('token');
           router.push('/login');
         }
       } else if (error instanceof Error) {
         message = error.message;
-        console.error('Error in handleStatusUpdate:', error); // Debug log
+        console.error('Error in handleStatusUpdate:', error);
       }
       toast.error(message, { position: 'top-right', autoClose: 3000 });
     } finally {
@@ -275,6 +275,7 @@ const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectEle
             <tr>
               <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Customer Name</th>
               <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Contact</th>
+              <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Gender</th>
               <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Location</th>
               <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Position</th>
               <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Experience</th>
@@ -287,7 +288,7 @@ const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectEle
           <tbody className="bg-white divide-y divide-gray-100">
             {filteredApplicants.length === 0 ? (
               <tr>
-                <td colSpan={9} className="px-6 py-6 text-center text-sm text-gray-500">No applicants found matching your criteria</td>
+                <td colSpan={10} className="px-6 py-6 text-center text-sm text-gray-500">No applicants found matching your criteria</td>
               </tr>
             ) : (
               filteredApplicants.map((applicant, index) => (
@@ -309,16 +310,16 @@ const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectEle
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="flex flex-col space-y-1">
-                      <div className="flex items-center text-sm text-gray-600">
-                        <FaGenderless className="w-4 h-4 mr-2 text-gray-400" />
-                        <span>{applicant.gender || 'Not provided'}</span>
-                      </div>
-                      <div className="flex items-center text-sm text-gray-600">
-                        <HiOutlinePhone className="w-4 h-4 mr-2 text-gray-400" />
-                        <span>{applicant.phone}</span>
-                      </div>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center text-sm text-gray-600">
+                      <HiOutlinePhone className="w-4 h-4 mr-2 text-gray-400" />
+                      <span>{applicant.phone}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <div className="flex items-center text-sm text-gray-600">
+                      <FaGenderless className="w-4 h-4 mr-2 text-gray-400" />
+                      <span>{applicant.gender === 'M' ? 'Male' : applicant.gender === 'F' ? 'Female' : 'Not provided'}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{applicant.location}</td>
@@ -541,20 +542,22 @@ const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectEle
                   />
                   {errors.position && <p className="mt-1 text-sm text-red-600">{errors.position}</p>}
                 </div>
-             <div>
-    <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
-    <select
-        name="gender"
-        value={newApplicant.gender}
-        onChange={handleInputChange}
-        className={w-full px-3 py-2 border rounded-md text-gray-800 ${errors.gender ? 'border-red-500' : 'border-gray-300'}}
-    >
-        <option value="">Select gender</option>
-        <option value="M">Male</option>
-        <option value="F">Female</option>
-    </select>
-    {errors.gender && <p className="mt-1 text-sm text-red-600">{errors.gender}</p>}
-</div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                  <select
+                    name="gender"
+                    value={newApplicant.gender}
+                    onChange={handleInputChange}
+                    className={`w-full px-3 py-2 border rounded-md text-gray-800 ${errors.gender ? 'border-red-500' : 'border-gray-300'}`}
+                    required
+                  >
+                    <option value="">Select gender</option>
+                    <option value="M">Male</option>
+                    <option value="F">Female</option>
+                  </select>
+                  {errors.gender && <p className="mt-1 text-sm text-red-600">{errors.gender}</p>}
+                </div>
+              </div>
               <div className="flex justify-end space-x-3">
                 <button
                   type="button"
