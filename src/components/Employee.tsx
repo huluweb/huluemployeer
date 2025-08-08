@@ -171,6 +171,16 @@ const Applicants: React.FC = () => {
       }
       setShowForm(false);
       setEditingApplicant(null);
+       setNewApplicant({
+        name: '',
+        position: '',
+        status: 'Review',
+        jobType: '',
+        location: '',
+        experience: '',
+        gender: '',
+        phone: '',
+      });
     } catch (error) {
       let message = 'Failed to add/update applicant';
       if (isAxiosError(error)) {
